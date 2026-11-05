@@ -1,0 +1,1 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd"><suite name="REST API Integration Suite" verbose="1" parallel="false"><test name="API suites"><classes><class name="com.apiautomation.tests.RegistrationTests"/><class name="com.apiautomation.tests.LoginTests"/><class name="com.apiautomation.tests.UserApiTests"/></classes></test></suite>

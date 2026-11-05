@@ -1,0 +1,20 @@
+{
+  "info": {"name":"Automated REST API Testing Framework","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json","description":"User management API scenarios. Set baseUrl and import a local environment."},
+  "variable":[{"key":"baseUrl","value":"http://localhost:8080"},{"key":"accessToken","value":""},{"key":"adminToken","value":""},{"key":"userId","value":""},{"key":"email","value":"postman@example.test"},{"key":"password","value":"Test@12345"}],
+  "item":[
+    {"name":"Registration","item":[
+      {"name":"Register user","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"Postman User\",\"email\":\"{{email}}\",\"password\":\"{{password}}\"}","options":{"raw":{"language":"json"}}},"url":"{{baseUrl}}/api/auth/register"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('created',()=>pm.response.to.have.status(201));","pm.test('password omitted',()=>pm.expect(pm.response.json()).not.to.have.property('password'));","if(pm.response.code===201)pm.environment.set('userId',pm.response.json().id);"]}}]},
+      {"name":"Invalid email","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"Bad User\",\"email\":\"bad-email\",\"password\":\"{{password}}\"}","options":{"raw":{"language":"json"}}},"url":"{{baseUrl}}/api/auth/register"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('invalid email rejected',()=>pm.response.to.have.status(400));"]}}]}
+    ]},
+    {"name":"Login","item":[
+      {"name":"Login user","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}","options":{"raw":{"language":"json"}}},"url":"{{baseUrl}}/api/auth/login"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('login succeeded',()=>pm.response.to.have.status(200));","if(pm.response.code===200)pm.environment.set('accessToken',pm.response.json().accessToken);"]}}]},
+      {"name":"Wrong password","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"email\":\"{{email}}\",\"password\":\"incorrect\"}","options":{"raw":{"language":"json"}}},"url":"{{baseUrl}}/api/auth/login"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('invalid credentials rejected',()=>pm.response.to.have.status(401));"]}}]}
+    ]},
+    {"name":"Users","item":[
+      {"name":"Get profile","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{accessToken}}"}],"url":"{{baseUrl}}/api/users/{{userId}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('profile returned',()=>pm.response.to.have.status(200));","pm.test('password omitted',()=>pm.expect(pm.response.json()).not.to.have.property('password'));"]}}]},
+      {"name":"Get profile without token","request":{"method":"GET","url":"{{baseUrl}}/api/users/{{userId}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('unauthorized',()=>pm.response.to.have.status(401));"]}}]},
+      {"name":"Update profile","request":{"method":"PUT","header":[{"key":"Authorization","value":"Bearer {{accessToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"Updated Postman User\",\"email\":\"{{email}}\"}","options":{"raw":{"language":"json"}}},"url":"{{baseUrl}}/api/users/{{userId}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('updated',()=>pm.response.to.have.status(200));"]}}]},
+      {"name":"Delete profile (requires adminToken)","request":{"method":"DELETE","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"}],"url":"{{baseUrl}}/api/users/{{userId}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('deleted or admin token is required',()=>pm.expect([204,401,403]).to.include(pm.response.code));"]}}]}
+    ]}
+  ]
+}

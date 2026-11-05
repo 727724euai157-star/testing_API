@@ -1,0 +1,6 @@
+package com.apiautomation.base;
+import com.apiautomation.clients.*;import com.apiautomation.database.DatabaseHelper;import org.testng.annotations.*;import java.net.*;import java.net.http.*;import java.time.Duration;
+public abstract class BaseTest {protected AuthApiClient auth;protected UserApiClient users;protected DatabaseHelper db;
+ @BeforeClass(alwaysRun=true) public void readiness(){try{var request=HttpRequest.newBuilder(URI.create(TestConfig.baseUrl()+"/v3/api-docs")).timeout(Duration.ofSeconds(10)).GET().build();var response=HttpClient.newHttpClient().send(request,HttpResponse.BodyHandlers.discarding());if(response.statusCode()>=500)throw new IllegalStateException("backend returned "+response.statusCode());auth=new AuthApiClient(TestConfig.baseUrl());users=new UserApiClient(TestConfig.baseUrl());db=new DatabaseHelper();}catch(Exception e){throw new IllegalStateException("API is not ready at "+TestConfig.baseUrl()+". Start backend and MySQL first. "+e.getMessage(),e);}}
+ protected void assertTime(io.restassured.response.Response r,long limit){org.testng.Assert.assertTrue(r.time()<limit,"HTTP "+r.statusCode()+" exceeded response-time threshold: "+r.time()+"ms (limit "+limit+"ms)");}
+}

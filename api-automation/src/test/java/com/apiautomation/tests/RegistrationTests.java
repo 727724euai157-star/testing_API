@@ -1,0 +1,9 @@
+package com.apiautomation.tests;
+import com.apiautomation.base.*;import com.apiautomation.utils.TestDataFactory;import org.testng.annotations.*;import static org.hamcrest.MatcherAssert.assertThat;import static org.hamcrest.Matchers.*;
+public class RegistrationTests extends BaseTest {
+ @Test public void validRegistrationPersistsHashedCustomerWithoutReturningPassword()throws Exception{String email=TestDataFactory.email(),password=TestDataFactory.password();try{var r=auth.register("Test User",email,password);r.then().statusCode(201).body("email",equalTo(email)).body("role",equalTo("CUSTOMER")).body("password",nullValue());assertTime(r,TestConfig.apiThreshold());var row=db.find(email);assertThat(row,is(notNullValue()));assertThat(row.role(),equalTo("CUSTOMER"));assertThat(row.password(),not(equalTo(password)));assertThat(row.password(),startsWith("$2"));}finally{db.cleanup(email);}}
+ @DataProvider public Object[][] invalid(){return new Object[][]{{"", "x@example.test","Test@12345"},{"Name","","Test@12345"},{"Name","bad-email","Test@12345"},{"Name","x@example.test",""},{"Name","x@example.test","short"}};}
+ @Test(dataProvider="invalid") public void invalidFieldsReturnBadRequest(String name,String email,String password){var r=auth.registerRaw(java.util.Map.of("name",name,"email",email,"password",password));r.then().statusCode(400).body("status",equalTo(400));}
+ @Test public void missingFieldsRejected(){auth.registerRaw(java.util.Map.of()).then().statusCode(400);}
+ @Test public void duplicateEmailRejected(){String e=TestDataFactory.email();try{auth.register("First",e,TestDataFactory.password()).then().statusCode(201);var r=auth.register("Second",e,TestDataFactory.password());r.then().statusCode(409);assertTime(r,TestConfig.apiThreshold());}finally{try{db.cleanup(e);}catch(Exception ignored){}}}
+}

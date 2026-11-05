@@ -1,0 +1,1 @@
+package com.apiautomation.utils;import java.util.UUID;public final class TestDataFactory {private TestDataFactory(){} public static String email(){return "auto-"+UUID.randomUUID()+"@example.test";} public static String password(){return "Test@12345";} }
